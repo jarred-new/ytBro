@@ -26,7 +26,7 @@ jobs:
         shell: cmd
         run: |
           python --version
-          python -c "import struct; print('Python architecture:', struct.calcsize('P') * 8, 'bit')"
+          python -c "import struct; print('Python:', struct.calcsize('P') * 8, 'bit')"
 
       - name: Install dependencies
         shell: cmd
@@ -34,21 +34,22 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Test yt-dlp
-        shell: cmd
-        run: |
-          python -c "import yt_dlp; print('yt-dlp:', yt_dlp.version.__version__)"
-
       - name: Test Tkinter
         shell: cmd
         run: |
           python -c "import tkinter; print('Tkinter OK')"
           python -c "import tkinter; print('Tcl:', tkinter.Tcl().eval('info patchlevel'))"
 
+      - name: Test yt-dlp
+        shell: cmd
+        run: |
+          python -c "import yt_dlp; print('yt-dlp:', yt_dlp.version.__version__)"
+
       - name: Build with Nuitka
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
+
           script-name: ytBro.py
 
           mode: standalone
@@ -56,7 +57,7 @@ jobs:
           enable-plugins: |
             tk-inter
 
-          windows-console-mode: disable         
+          windows-console-mode: disable
 
           output-dir: build
 
@@ -65,6 +66,9 @@ jobs:
           jobs: 1
 
           lto: no
+
+          noinclude-module: |
+            yt_dlp.extractor.lazy_extractors
 
       - name: Upload Windows x86 build
         uses: actions/upload-artifact@v4
