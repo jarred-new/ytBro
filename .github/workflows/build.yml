@@ -1,18 +1,18 @@
-name: Build Windows x86 EXE
+name: Build Windows x86
 
 on:
   push:
     branches:
       - main
+
   workflow_dispatch:
 
 jobs:
   build:
-    name: Nuitka Windows x86
     runs-on: windows-latest
 
     steps:
-      - name: Checkout source
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Python x86
@@ -20,40 +20,37 @@ jobs:
         with:
           python-version: '3.13'
           architecture: 'x86'
-          cache: 'pip'
+          cache: pip
 
-      - name: Verify Python architecture
+      - name: Verify Python
         shell: cmd
         run: |
           python --version
-          python -c "import platform; print(platform.architecture())"
-          python -c "import struct; print('Python bits:', struct.calcsize('P') * 8)"
+          python -c "import struct; print('Python architecture:', struct.calcsize('P') * 8, 'bit')"
 
       - name: Install dependencies
         shell: cmd
         run: |
           python -m pip install --upgrade pip
-          python -m pip install yt-dlp
+          python -m pip install -r requirements.txt
 
-      - name: Locate Tcl/Tk
+      - name: Test yt-dlp
         shell: cmd
         run: |
-          python -c "import tkinter; print(tkinter.__file__)"
-          python -c "import tkinter; print(tkinter.Tcl().eval('info library'))"
+          python -c "import yt_dlp; print('yt-dlp:', yt_dlp.version.__version__)"
 
-      - name: Diagnose Tkinter
+      - name: Test Tkinter
         shell: cmd
         run: |
-          python -c "import tkinter; print('Tkinter:', tkinter)"
-          python -c "import tkinter; print('Tcl version:', tkinter.Tcl().eval('info patchlevel'))"
-          python -c "import sys; print('Python:', sys.executable)"
-          python -c "import sysconfig; print('Prefix:', sys.prefix)"
+          python -c "import tkinter; print('Tkinter OK')"
+          python -c "import tkinter; print('Tcl:', tkinter.Tcl().eval('info patchlevel'))"
 
       - name: Build with Nuitka
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
           script-name: ytBro.py
+
           mode: standalone
 
           enable-plugins: |
@@ -61,17 +58,17 @@ jobs:
 
           windows-console-mode: disable
 
-          output-dir: build
-
           include-package: |
             yt_dlp
+
+          output-dir: build
 
           assume-yes-for-downloads: true
 
       - name: Upload Windows x86 build
         uses: actions/upload-artifact@v4
         with:
-          name: Windows-x86
+          name: ytBro-Windows-x86
           path: |
             build/*.dist/**
             build/*.exe
