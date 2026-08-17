@@ -65,6 +65,10 @@ jobs:
 
           assume-yes-for-downloads: true
 
+          jobs: 1
+
+          lto: no
+
       - name: Upload Windows x86 build
         uses: actions/upload-artifact@v4
         with:
