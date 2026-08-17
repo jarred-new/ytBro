@@ -1,40 +1,78 @@
-name: Build With Nuitka
+name: Build Windows x86 EXE
 
 on:
   push:
-    branches: [ "main", "master" ]
-  pull_request:
-    branches: [ "main", "master" ]
-  workflow_dispatch: # Allows manual trigger from the Actions tab
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
-
   build:
+    name: Nuitka Windows x86
     runs-on: windows-latest
 
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      # Check-out repository
-      - uses: actions/checkout@v4
-
-      # Setup Python
-      - uses: actions/setup-python@v5
+      - name: Setup Python x86
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x' # Version range or exact version of a Python version to use, using SemVer's version range syntax
-          architecture: 'x86' # optional x64 or x86. Defaults to x64 if not specified
+          python-version: '3.13'
+          architecture: 'x86'
+          cache: 'pip'
 
-      # Build python script into a single execute or app folder (macOS)
-      - uses: Nuitka/Nuitka-Action@main
+      - name: Verify Python architecture
+        shell: cmd
+        run: |
+          python --version
+          python -c "import platform; print(platform.architecture())"
+          python -c "import struct; print('Python bits:', struct.calcsize('P') * 8)"
+
+      - name: Install dependencies
+        shell: cmd
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install yt-dlp
+
+      - name: Locate Tcl/Tk
+        shell: cmd
+        run: |
+          python -c "import tkinter; print(tkinter.__file__)"
+          python -c "import tkinter; print(tkinter.Tcl().eval('info library'))"
+
+      - name: Diagnose Tkinter
+        shell: cmd
+        run: |
+          python -c "import tkinter; print('Tkinter:', tkinter)"
+          python -c "import tkinter; print('Tcl version:', tkinter.Tcl().eval('info patchlevel'))"
+          python -c "import sys; print('Python:', sys.executable)"
+          python -c "import sysconfig; print('Prefix:', sys.prefix)"
+
+      - name: Build with Nuitka
+        uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
           script-name: ytBro.py
           mode: standalone
-          enable-plugins: tk-inter
 
-      # Uploads artifact
-      - name: Upload Artifact
+          enable-plugins: |
+            tk-inter
+
+          windows-console-mode: disable
+
+          output-dir: build
+
+          include-package: |
+            yt_dlp
+
+          assume-yes-for-downloads: true
+
+      - name: Upload Windows x86 build
         uses: actions/upload-artifact@v4
         with:
-          name: exe
-          path: build/ytBro.exe
+          name: Windows-x86
+          path: |
+            build/*.dist/**
+            build/*.exe
           include-hidden-files: true
