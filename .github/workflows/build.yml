@@ -56,10 +56,7 @@ jobs:
           enable-plugins: |
             tk-inter
 
-          windows-console-mode: disable
-
-          include-package: |
-            yt_dlp
+          windows-console-mode: disable         
 
           output-dir: build
 
