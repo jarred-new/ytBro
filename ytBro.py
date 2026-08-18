@@ -33,17 +33,23 @@ def append_log(text):
     logBar.insert(tk.END, text + "\n")
     logBar.see(tk.END)
     logBar.config(state="disabled")
-
+    
+    
+def clear_log_clicked():
+    if messagebox.askyesno("Clear?", "Are you sure to clear all logs?", parent=root):
+        logBar.config(state="normal")
+        logBar.delete("1.0", tk.END)
+        logBar.config(state="disabled")
 
 def download_youtube_video(url, playlist):
     ydl_opts = {
         # Downloads a single file with video+audio (no FFmpeg required)
         "format": "best[height<=1080]/best" if not audio_var.get() else "bestaudio/best",
         "noplaylist": not playlist,
-        "logger": TextLogger(),
+        "logger": TextLogger(),       
         "verbose": True,
         "quiet": False,       
-        "no_warnings": False,
+        "no_warnings": True,
         "progress_hooks": [lambda d: append_log(f"Progress: {d['status']} - {d.get('downloaded_bytes', 0)} bytes downloaded")],
         "outtmpl": os.path.join(downloadPath, "%(title)s.%(ext)s") if isPicked else "%(title)s.%(ext)s"
     }
@@ -156,6 +162,15 @@ pathPicker = tk.Button(
     fg="white"
 )
 pathPicker.pack(fill="x", expand=True, pady=(0, 10))
+
+clearLogBtn = tk.Button(
+    root,
+    text="Clear Log Text",
+    command=clear_log_clicked,
+    bg="#bf1408",
+    fg="white",
+)
+clearLogBtn.pack(fill="x", expand=True, pady=(0, 10))
 
 downloadBtn = tk.Button(
     root,
