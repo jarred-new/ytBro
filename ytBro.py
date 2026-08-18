@@ -12,6 +12,7 @@ import tkinter.messagebox as messagebox
 import tkinter.filedialog
 import webbrowser as browser
 import os
+import sys
 import yt_dlp
 
 isPicked = False
@@ -112,13 +113,27 @@ def select_download_path():
         isPicked = False
         downloadPath = ""
         append_log("No download path selected.")
+        
+def resource_path(filename):
+    if getattr(sys, "frozen", False):
+        return os.path.join(os.path.dirname(sys.executable), filename)
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
 
 # ---------------- GUI ----------------
 
+ico = resource_path("1000088823.ico")
+
 root = tk.Tk()
-root.title("YtBro - YouTube Downloader by Jarred")
+root.title("YtBro - A YouTube Downloader by Jarred")
 root.geometry("700x450")
+
+try:
+    root.iconbitmap(ico)
+except tk.TclError:
+    messagebox.showinfo("Error", "YtBro cannot find the icon file. It maybe renamed or deleted...", parent=root)
+    
+
 root.configure(bg="#DDA756")
 
 tk.Label(root, text="YtBro", font=font.Font(weight="bold", size=24), bg="#bf1408", foreground="white", anchor="center").pack(fill="both", expand=True)

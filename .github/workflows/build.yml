@@ -59,6 +59,11 @@ jobs:
 
           windows-console-mode: disable
 
+          windows-icon-from-ico: 1000088823.ico
+
+          include-data-files: |
+            1000088823.ico=1000088823.ico
+
           output-dir: build
 
           assume-yes-for-downloads: true
