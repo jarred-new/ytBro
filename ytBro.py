@@ -19,6 +19,12 @@ import shutil
 isPicked = False
 downloadPath = ""
 
+ffmpeg_path = shutil.which("ffmpeg")
+
+if not ffmpeg_path:
+        messagebox.showinfo("YtBro Error", "YtBro needs ffmpeg to be installed. Please download and install ffmpeg.", parent=None, icon="info")
+        sys.exit(1)
+
 class TextLogger:
     def debug(self, msg):
         append_log(msg)
