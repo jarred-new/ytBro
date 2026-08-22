@@ -14,6 +14,7 @@ import webbrowser as browser
 import os
 import sys
 import yt_dlp
+import shutil
 
 isPicked = False
 downloadPath = ""
@@ -45,12 +46,14 @@ def clear_log_clicked():
 def download_youtube_video(url, playlist):
     ydl_opts = {
         # Downloads a single file with video+audio (no FFmpeg required)
-        "format": "best[height<=1080]/best" if not audio_var.get() else "bestaudio/best",
+        "format": 
+        "bv*[height=720]+ba/b[height=720]" if not audio_var.get() else "bestaudio/best",
+        'allow_playlist_files': True,
         "noplaylist": not playlist,
         "logger": TextLogger(),       
-        "verbose": True,
+        "verbose": False,
         "quiet": False,       
-        "no_warnings": True,
+        "no_warnings": False,
         "progress_hooks": [lambda d: append_log(f"Progress: {d['status']} - {d.get('downloaded_bytes', 0)} bytes downloaded")],
         "outtmpl": os.path.join(downloadPath, "%(title)s.%(ext)s") if isPicked else "%(title)s.%(ext)s"
     }
