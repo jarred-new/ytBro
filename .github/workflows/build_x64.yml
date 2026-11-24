@@ -1,4 +1,4 @@
-name: Build Windows x86 (3.11)
+name: Build Windows x64
 
 on:
   push:
@@ -15,11 +15,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python x86
+      - name: Setup Python x64
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          architecture: 'x86'
+          architecture: 'x64'
           cache: pip
 
       - name: Verify Python
@@ -75,10 +75,10 @@ jobs:
           nofollow-import-to: |
             yt_dlp.extractor.lazy_extractors
 
-      - name: Upload Windows x86 build
+      - name: Upload Windows x64 build
         uses: actions/upload-artifact@v4
         with:
-          name: ytBro-Windows-x86
+          name: ytBro-Windows-x64
           path: |
             build/*.dist/**
             build/*.exe
