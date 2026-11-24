@@ -3,18 +3,19 @@
 # Powered by yt-dlp
 # To install yt-dlp, run: pip install yt-dlp
 
-import subprocess
-import threading
 import tkinter as tk
-from tkinter import font
+from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 import tkinter.messagebox as messagebox
 import tkinter.filedialog
+
 import webbrowser as browser
+
 import os
 import sys
 import yt_dlp
 import shutil
+import threading
 
 isPicked = False
 downloadPath = ""
@@ -22,8 +23,8 @@ downloadPath = ""
 ffmpeg_path = shutil.which("ffmpeg")
 
 if not ffmpeg_path:
-        messagebox.showinfo("YtBro Error", "YtBro needs ffmpeg to be installed. Please download and install ffmpeg.", parent=None, icon="info")
-        sys.exit(1)
+    messagebox.showinfo("YtBro Error", "YtBro needs ffmpeg to be installed. Please download and install ffmpeg.", parent=None, icon="info")
+    sys.exit(1)
 
 class TextLogger:
     def debug(self, msg):
@@ -117,10 +118,12 @@ def select_download_path():
 
     if downloadPath:
         isPicked = True
+        path_var.set(downloadPath)
         append_log(f"Download path set to: {downloadPath}")
     else:
         isPicked = False
         downloadPath = ""
+        path_var.set("Downloads will be saved in the current folder")
         append_log("No download path selected.")
         
 def resource_path(filename):
@@ -135,85 +138,224 @@ ico = resource_path("1000088823.ico")
 
 root = tk.Tk()
 root.title("YtBro - A YouTube Downloader by Jarred")
-root.geometry("700x450")
+root.geometry("860x620")
+root.minsize(760, 560)
 
 try:
     root.iconbitmap(ico)
 except tk.TclError:
     messagebox.showinfo("Error", "YtBro cannot find the icon file. It maybe renamed or deleted...", parent=root)
-    
 
-root.configure(bg="#DDA756")
+colors = {
+    "background": "#12090b",
+    "panel": "#211114",
+    "field": "#180b0e",
+    "text": "#fff1f2",
+    "muted": "#c4a3a8",
+    "accent": "#e11d48",
+    "accent_hover": "#be123c",
+    "border": "#48212a",
+}
 
-tk.Label(root, text="YtBro", font=font.Font(weight="bold", size=24), bg="#bf1408", foreground="white", anchor="center").pack(fill="both", expand=True)
-tk.Label(root, text="YouTube Downloader by Jarred (Powered by yt-dlp)", font=font.Font(weight="bold", size=12), bg="#bf1408", foreground="white", anchor="center").pack(fill="both", expand=True, pady=(0, 5))
+root.configure(bg=colors["background"])
+style = ttk.Style(root)
+if "clam" in style.theme_names():
+    style.theme_use("clam")
 
+style.configure("App.TFrame", background=colors["background"])
+style.configure("Card.TFrame", background=colors["panel"])
+style.configure(
+    "Body.TLabel",
+    background=colors["panel"],
+    foreground=colors["text"],
+    font=("Segoe UI", 10),
+)
+style.configure(
+    "Muted.TLabel",
+    background=colors["panel"],
+    foreground=colors["muted"],
+    font=("Segoe UI", 9),
+)
+style.configure(
+    "Section.TLabel",
+    background=colors["panel"],
+    foreground=colors["text"],
+    font=("Segoe UI", 12, "bold"),
+)
+style.configure(
+    "Modern.TEntry",
+    fieldbackground=colors["field"],
+    foreground=colors["text"],
+    padding=10,
+    borderwidth=0,
+)
+style.configure(
+    "Card.TCheckbutton",
+    background=colors["panel"],
+    foreground=colors["text"],
+    font=("Segoe UI", 10),
+    padding=4,
+)
+style.map(
+    "Card.TCheckbutton",
+    background=[("active", colors["panel"])],
+    foreground=[("active", colors["accent"])],
+)
+style.configure(
+    "Modern.TButton",
+    background=colors["border"],
+    foreground=colors["text"],
+    font=("Segoe UI", 10, "bold"),
+    padding=(12, 9),
+    borderwidth=0,
+)
+style.map(
+    "Modern.TButton",
+    background=[("active", "#5d2934"), ("pressed", "#371820")],
+)
+style.configure(
+    "Download.TButton",
+    background=colors["accent"],
+    foreground="#ffffff",
+    font=("Segoe UI", 11, "bold"),
+    padding=(14, 11),
+    borderwidth=0,
+)
+style.map(
+    "Download.TButton",
+    background=[("active", colors["accent_hover"]), ("pressed", "#9f1239")],
+)
 
-tk.Label(root, text="Enter YouTube URL:", font=font.Font(weight="bold", size=12), anchor="w", bg="#DDA756").pack(fill="x", expand=True, pady=2, padx=10, anchor="w")
+header = tk.Frame(root, bg="#1b0c10", padx=24, pady=18)
+header.pack(fill="x")
+tk.Label(
+    header,
+    text="YtBro",
+    bg="#1b0c10",
+    fg=colors["text"],
+    font=("Segoe UI", 25, "bold"),
+).pack(anchor="w")
+tk.Label(
+    header,
+    text="A YouTube Downloader by Jarred",
+    bg="#1b0c10",
+    fg=colors["muted"],
+    font=("Segoe UI", 10),
+).pack(anchor="w", pady=(2, 0))
 
-urlBox = tk.Entry(root, bg="#faaaaa", font=font.Font(size=12))
-urlBox.pack(fill="x", expand=True, padx=10, pady=5)
+content = ttk.Frame(root, style="App.TFrame", padding=18)
+content.pack(fill="both", expand=True)
+content.columnconfigure(0, weight=4, minsize=290)
+content.columnconfigure(1, weight=5, minsize=350)
+content.rowconfigure(0, weight=1)
 
-ytWebButton = tk.Button(root, text="Open YouTube Website", command=show_youtube_website_tkwindow, bg="#bf1408", fg="white")
-ytWebButton.pack(pady=5, padx=10, anchor="nw")
+controls = ttk.Frame(content, style="App.TFrame")
+controls.grid(row=0, column=0, sticky="nsew", padx=(0, 10))
+controls.columnconfigure(0, weight=1)
+controls.rowconfigure(1, weight=1)
+
+url_card = ttk.Frame(controls, style="Card.TFrame", padding=16)
+url_card.grid(row=0, column=0, sticky="new", pady=(0, 12))
+url_card.columnconfigure(0, weight=1)
+ttk.Label(url_card, text="Video URL", style="Section.TLabel").grid(
+    row=0, column=0, sticky="w"
+)
+ttk.Label(
+    url_card,
+    text="Paste a YouTube video or playlist link",
+    style="Muted.TLabel",
+).grid(row=1, column=0, sticky="w", pady=(3, 10))
+urlBox = ttk.Entry(url_card, font=("Segoe UI", 11), style="Modern.TEntry")
+urlBox.grid(row=2, column=0, sticky="ew", pady=(0, 10))
+ytWebButton = ttk.Button(
+    url_card,
+    text="Open YouTube",
+    command=show_youtube_website_tkwindow,
+    style="Modern.TButton",
+)
+ytWebButton.grid(row=3, column=0, sticky="ew")
 
 playlist_var = tk.BooleanVar(value=False)
 audio_var = tk.BooleanVar(value=False)
 
-tk.Label(root, text="Settings:", font=font.Font(weight="bold", size=12), anchor="w", bg="#DDA756").pack(fill="x", expand=True, pady=2, padx=10, anchor="w")
-
-playlist_check = tk.Checkbutton(
-    root,
-    text="Download Playlist",
+path_var = tk.StringVar(value="Downloads will be saved in the current folder")
+settings_card = ttk.Frame(controls, style="Card.TFrame", padding=16)
+settings_card.grid(row=1, column=0, sticky="nsew")
+settings_card.columnconfigure(0, weight=1)
+ttk.Label(settings_card, text="Preferences", style="Section.TLabel").grid(
+    row=0, column=0, sticky="w", pady=(0, 8)
+)
+playlist_check = ttk.Checkbutton(
+    settings_card,
+    text="Download playlist",
     variable=playlist_var,
-    bg="#DDA756",
+    style="Card.TCheckbutton",
 )
-playlist_check.pack(padx=10, pady=5, anchor="nw")
-
-audio_check = tk.Checkbutton(
-    root,
-    text="Download Audio Only",
+playlist_check.grid(row=1, column=0, sticky="w")
+audio_check = ttk.Checkbutton(
+    settings_card,
+    text="Audio only",
     variable=audio_var,
-    bg="#DDA756",
+    style="Card.TCheckbutton",
 )
-audio_check.pack(padx=10, pady=5, anchor="nw")
-
-pathPicker = tk.Button(
-    root,
-    text="Select Download Path",
+audio_check.grid(row=2, column=0, sticky="w")
+pathPicker = ttk.Button(
+    settings_card,
+    text="Choose download folder",
     command=select_download_path,
-    bg="#bf1408",
-    fg="white"
+    style="Modern.TButton",
 )
-pathPicker.pack(fill="x", expand=True, pady=(0, 10))
-
-clearLogBtn = tk.Button(
-    root,
-    text="Clear Log Text",
-    command=clear_log_clicked,
-    bg="#bf1408",
-    fg="white",
-)
-clearLogBtn.pack(fill="x", expand=True, pady=(0, 10))
-
-downloadBtn = tk.Button(
-    root,
-    text="Download",
+pathPicker.grid(row=3, column=0, sticky="ew", pady=(10, 5))
+ttk.Label(
+    settings_card,
+    textvariable=path_var,
+    style="Muted.TLabel",
+    wraplength=250,
+).grid(row=4, column=0, sticky="w", pady=(0, 10))
+downloadBtn = ttk.Button(
+    settings_card,
+    text="Start download",
     command=download_button_clicked,
-    bg="#bf1408",
-    fg="white",
+    style="Download.TButton",
 )
-downloadBtn.pack(fill="x", expand=True, pady=(0, 10))
+downloadBtn.grid(row=5, column=0, sticky="ew")
 
+log_card = ttk.Frame(content, style="Card.TFrame", padding=16)
+log_card.grid(row=0, column=1, sticky="nsew")
+log_card.columnconfigure(0, weight=1)
+log_card.rowconfigure(2, weight=1)
+ttk.Label(log_card, text="Activity", style="Section.TLabel").grid(
+    row=0, column=0, sticky="w"
+)
+ttk.Label(
+    log_card,
+    text="Download progress and messages appear here",
+    style="Muted.TLabel",
+).grid(row=1, column=0, sticky="w", pady=(3, 10))
 logBar = ScrolledText(
-    root,
-    width=80,
+    log_card,
+    width=50,
     height=18,
     state="disabled",
     wrap=tk.WORD,
-    bg="#faaaaa"
+    bg=colors["field"],
+    fg=colors["text"],
+    insertbackground=colors["text"],
+    selectbackground=colors["accent_hover"],
+    relief="flat",
+    borderwidth=0,
+    padx=10,
+    pady=10,
+    font=("Consolas", 9),
 )
-logBar.pack(fill="both", expand=True, padx=10, pady=10)
+logBar.grid(row=2, column=0, sticky="nsew")
+clearLogBtn = ttk.Button(
+    log_card,
+    text="Clear activity",
+    command=clear_log_clicked,
+    style="Modern.TButton",
+)
+clearLogBtn.grid(row=3, column=0, sticky="e", pady=(10, 0))
 
 root.mainloop()
 
