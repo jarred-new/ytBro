@@ -1,6 +1,6 @@
 # ytBro for Windows
 
-#### Looking for Android? [Click here to open the Android Repo](https://github.com/jarred-new/ytBro-Android)
+#### Looking for Android? NOTE: Android version is now archived due to lack of maintenance and issues with downloading YouTube-only videos (not audio) [Click here to open the Android Repo](https://github.com/jarred-new/ytBro-Android)
 
 <div align="center">
   <img src="data/icon.png">
@@ -10,7 +10,7 @@
   </h3>
   
   <h5>
-    A Youtube Downloader for Windows written in Python
+    A YouTube Downloader for Windows written in Python
   </h5>
 </div>
 
