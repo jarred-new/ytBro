@@ -85,6 +85,11 @@ jobs:
         run: |
           powershell -Command "Expand-Archive -Path build/ytBro.dist/ffmpeg.zip -DestinationPath build/ytBro.dist/"
 
+      - name: Delete FFmpeg.zip
+        shell: cmd
+        run: |
+          del /f ffmpeg.zip
+          
       - name: Upload Windows x64 build
         uses: actions/upload-artifact@v4
         with:
