@@ -14,17 +14,13 @@ import webbrowser as browser
 import os
 import sys
 import yt_dlp
-import shutil
 import threading
 
 isPicked = False
 downloadPath = ""
 
-ffmpeg_path = shutil.which("ffmpeg")
-
-if not ffmpeg_path:
-    messagebox.showinfo("YtBro Error", "YtBro needs ffmpeg to be installed. Please download and install ffmpeg.", parent=None, icon="info")
-    sys.exit(1)
+base_dir = os.path.dirname(os.path.abspath(__file__))
+ffmpeg_path = os.path.join(base_dir, "ffmpeg-master-latest-win64-gpl", "bin", "ffmpeg.exe")
 
 class TextLogger:
     def debug(self, msg):
@@ -52,7 +48,7 @@ def clear_log_clicked():
 
 def download_youtube_video(url, playlist):
     ydl_opts = {
-        # Downloads a single file with video+audio (no FFmpeg required)
+        "ffmpeg_location": ffmpeg_path,
         "format": 
         "bv*[height=720]+ba/b[height=720]" if not audio_var.get() else "bestaudio/best",
         'allow_playlist_files': True,

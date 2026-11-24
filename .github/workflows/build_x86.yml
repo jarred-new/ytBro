@@ -75,6 +75,16 @@ jobs:
           nofollow-import-to: |
             yt_dlp.extractor.lazy_extractors
 
+      - name: Download FFmpeg binaries from BtbN (GPL-static build)
+        shell: cmd
+        run: |
+          curl.exe --fail --location --output build/*.dist/ffmpeg.zip https://github.com/FFmpeg-Builds/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip
+
+      - name: Unzip FFmpeg binaries
+        shell: cmd
+        run: |
+          powershell -Command "Expand-Archive -Path build/*.dist/ffmpeg.zip -DestinationPath build/*.dist/"
+
       - name: Upload Windows x86 build
         uses: actions/upload-artifact@v4
         with:
