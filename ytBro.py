@@ -155,7 +155,7 @@ colors = {
 
 root.configure(bg=colors["background"])
 style = ttk.Style(root)
-print(style.theme_names())
+# print(style.theme_names())
 if "alt" in style.theme_names():
     style.theme_use("alt")
 
