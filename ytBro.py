@@ -57,6 +57,7 @@ def download_youtube_video(url, playlist):
         "verbose": False,
         "quiet": False,       
         "no_warnings": False,
+        "merge_output_format": "mp4" if not audio_var.get() else "m4a",
         "progress_hooks": [lambda d: append_log(f"Progress: {d['status']} - {d.get('downloaded_bytes', 0)} bytes downloaded")],
         "outtmpl": os.path.join(downloadPath, "%(title)s.%(ext)s") if isPicked else "%(title)s.%(ext)s"
     }
