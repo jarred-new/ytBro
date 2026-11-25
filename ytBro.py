@@ -8,6 +8,7 @@ from tkinter import ttk
 from tkinter.scrolledtext import ScrolledText
 import tkinter.messagebox as messagebox
 import tkinter.filedialog
+from tkinter import simpledialog
 
 import webbrowser as browser
 
@@ -45,7 +46,7 @@ def clear_log_clicked():
         logBar.delete("1.0", tk.END)
         logBar.config(state="disabled")
 
-def download_youtube_video(url, playlist):
+def download_video(url, playlist):
     ydl_opts = {
         "ffmpeg_location": ffmpeg_path,
         "format": 
@@ -77,11 +78,11 @@ def download_button_clicked():
     url = urlBox.get().strip()
 
     if not url:
-        append_log("Please enter a YouTube URL.")
+        append_log("Please enter a valid URL.")
         return
 
     threading.Thread(
-        target=download_youtube_video,
+        target=download_video,
         args=(url, playlist_var.get()),
         daemon=True
     ).start()
@@ -94,15 +95,31 @@ def download_button_clicked():
     else:
         append_log("No download path selected. Downloaded files will be saved in the current working directory.")
 
-def show_youtube_website_tkwindow():
-    messagebox.showinfo("Open YouTube Website", 
-                        "You will be redirected to the YouTube website. " \
-                        "To download videos, please copy the URL from your browser and paste it into the input field in this application.", 
-                        parent=root,
-                        icon='info')
+def show_website_window():
+    # Generate a list of extractors from yt-dlp to identify supported platforms
+    extractors = yt_dlp.extractor.gen_extractors()
 
-    if messagebox.askyesno("Open YouTube Website", "Do you want to open the YouTube website in your default browser?", parent=root):
-        browser.open("https://www.youtube.com")
+    # Get a list of platform/extractor names (e.g., 'youtube', 'vimeo', 'twitch:vod')
+    platforms = [ie.IE_NAME for ie in extractors if getattr(ie, '_WORKING', True)]
+
+    website_picker = simpledialog.askstring(
+        "Open Website",
+        "Enter the website URL to open:",
+        parent=root
+    )
+
+    if website_picker:
+        # Check if the entered URL matches any supported platform
+        if any(platform in website_picker for platform in platforms):
+            browser.open(f"{website_picker}.com")
+            append_log(f"Opened website: {website_picker}")
+        else:
+            messagebox.showerror(
+                "Unsupported Platform",
+                "The entered URL does not match any supported platforms.",
+                parent=root
+            )
+            append_log(f"Failed to open website: {website_picker} (unsupported platform)")
 
 def select_download_path():
     global isPicked, downloadPath
@@ -127,13 +144,38 @@ def resource_path(filename):
         return os.path.join(os.path.dirname(sys.executable), filename)
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), filename)
 
+def show_supported_platforms():
+    # Generate a list of extractors from yt-dlp to identify supported platforms
+    extractors = yt_dlp.extractor.gen_extractors()
+
+    # Get a list of platform/extractor names (e.g., 'youtube', 'vimeo', 'twitch:vod')
+    platforms = [ie.IE_NAME for ie in extractors if getattr(ie, '_WORKING', True)]
+
+    # Create a new window to display the supported platforms
+    platforms_window = tk.Toplevel(root)
+    platforms_window.title("Supported Platforms")
+    platforms_window.geometry("400x300")
+    platforms_window.resizable(False, False)
+
+    # Create a scrollable text widget to display the platforms
+    text_widget = ScrolledText(platforms_window, wrap=tk.WORD, state="normal")
+    text_widget.pack(fill=tk.BOTH, expand=True)
+
+    # Insert the supported platforms into the text widget
+    text_widget.insert(tk.END, "Supported Platforms:\n\n")
+    for platform in sorted(platforms):
+        text_widget.insert(tk.END, f"- {platform}\n")
+
+    # Disable editing of the text widget
+    text_widget.config(state="disabled")
+
 
 # ---------------- GUI ----------------
 
 ico = resource_path("1000088823.ico")
 
 root = tk.Tk()
-root.title("YtBro - A YouTube Downloader by Jarred")
+root.title("YtBro - A All-in-one video and audio Downloader by Jarred")
 root.geometry("860x620")
 root.minsize(760, 560)
 
@@ -259,18 +301,25 @@ ttk.Label(url_card, text="Video URL", style="Section.TLabel").grid(
 )
 ttk.Label(
     url_card,
-    text="Paste a YouTube video or playlist link",
+    text="Paste a video or playlist link",
     style="Muted.TLabel",
 ).grid(row=1, column=0, sticky="w", pady=(3, 10))
 urlBox = ttk.Entry(url_card, font=("Segoe UI", 11), style="Modern.TEntry")
 urlBox.grid(row=2, column=0, sticky="ew", pady=(0, 10))
 ytWebButton = ttk.Button(
     url_card,
-    text="Open YouTube",
-    command=show_youtube_website_tkwindow,
+    text="Open Website",
+    command=show_website_window,
     style="Modern.TButton",
 )
 ytWebButton.grid(row=3, column=0, sticky="ew")
+supportedPlatformsButton = ttk.Button(
+    url_card,
+    text="Supported Platforms",    
+    command=show_supported_platforms,
+    style="Modern.TButton"
+)
+supportedPlatformsButton.grid(row=4, column=0, sticky="ew", pady=(10, 0))
 
 playlist_var = tk.BooleanVar(value=False)
 audio_var = tk.BooleanVar(value=False)
