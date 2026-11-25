@@ -32,7 +32,6 @@ class TextLogger:
     def error(self, msg):
         append_log("ERROR: " + msg)
 
-
 def append_log(text):
     logBar.config(state="normal")
     logBar.insert(tk.END, text + "\n")
@@ -156,8 +155,9 @@ colors = {
 
 root.configure(bg=colors["background"])
 style = ttk.Style(root)
-if "clam" in style.theme_names():
-    style.theme_use("clam")
+print(style.theme_names())
+if "alt" in style.theme_names():
+    style.theme_use("alt")
 
 style.configure("App.TFrame", background=colors["background"])
 style.configure("Card.TFrame", background=colors["panel"])
