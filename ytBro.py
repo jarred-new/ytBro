@@ -54,9 +54,9 @@ def download_video(url, playlist):
         'allow_playlist_files': True,
         "noplaylist": not playlist,
         "logger": TextLogger(),       
-        "verbose": False,
-        "quiet": False,       
-        "no_warnings": False,
+        "verbose": verbose_var.get(),
+        "quiet": quiet_var.get(),       
+        "no_warnings": no_warnings_var.get(),
         "merge_output_format": "mp4" if not audio_var.get() else "m4a",
         "progress_hooks": [lambda d: append_log(f"Progress: {d['status']} - {d.get('downloaded_bytes', 0)} bytes downloaded")],
         "outtmpl": os.path.join(downloadPath, "%(title)s.%(ext)s") if isPicked else "%(title)s.%(ext)s"
@@ -264,6 +264,21 @@ style.map(
     "Download.TButton",
     background=[("active", colors["accent_hover"]), ("pressed", "#9f1239")],
 )
+style.configure(
+    "Vertical.TScrollbar",
+    gripcount=0,
+    background=colors["panel"],
+    darkcolor=colors["panel"],
+    lightcolor=colors["panel"],
+    troughcolor=colors["panel"],
+    bordercolor=colors["panel"],
+    arrowcolor=colors["text"],
+)
+style.map(
+    "Vertical.TScrollbar",
+    background=[("active", colors["panel"])],
+    arrowcolor=[("active", colors["accent"])],
+)
 
 header = tk.Frame(root, bg="#1b0c10", padx=24, pady=18)
 header.pack(fill="x")
@@ -321,50 +336,137 @@ supportedPlatformsButton = ttk.Button(
 )
 supportedPlatformsButton.grid(row=4, column=0, sticky="ew", pady=(10, 0))
 
+# playlist and audio checkboxes
 playlist_var = tk.BooleanVar(value=False)
 audio_var = tk.BooleanVar(value=False)
 
+# debugging
+verbose_var = tk.BooleanVar(value=False)
+no_warnings_var = tk.BooleanVar(value=False)
+quiet_var = tk.BooleanVar(value=False)
+
 path_var = tk.StringVar(value="Downloads will be saved in the current folder")
-settings_card = ttk.Frame(controls, style="Card.TFrame", padding=16)
+settings_card = ttk.Frame(controls, style="Card.TFrame")
 settings_card.grid(row=1, column=0, sticky="nsew")
 settings_card.columnconfigure(0, weight=1)
-ttk.Label(settings_card, text="Preferences", style="Section.TLabel").grid(
+settings_card.rowconfigure(0, weight=1)
+
+settings_canvas = tk.Canvas(
+    settings_card,
+    bg=colors["panel"],
+    highlightthickness=0,
+    borderwidth=0,
+)
+settings_canvas.grid(row=0, column=0, sticky="nsew")
+settings_scrollbar = ttk.Scrollbar(
+    settings_card,
+    orient="vertical",
+    command=settings_canvas.yview,
+    style="Vertical.TScrollbar"
+)
+settings_scrollbar.grid(row=0, column=1, sticky="ns")
+settings_canvas.configure(yscrollcommand=settings_scrollbar.set)
+
+settings_content = ttk.Frame(settings_canvas, style="Card.TFrame", padding=16)
+settings_window = settings_canvas.create_window(
+    (0, 0),
+    window=settings_content,
+    anchor="nw",
+)
+settings_content.bind(
+    "<Configure>",
+    lambda event: settings_canvas.configure(
+        scrollregion=event.widget.master.bbox("all")
+    ),
+)
+settings_canvas.bind(
+    "<Configure>",
+    lambda event: settings_canvas.itemconfigure(
+        settings_window,
+        width=event.width,
+    ),
+)
+
+def scroll_settings(event):
+    widget = root.winfo_containing(event.x_root, event.y_root)
+    while widget is not None:
+        if widget == settings_canvas:
+            settings_canvas.yview_scroll(int(-event.delta / 120), "units")
+            break
+        widget = widget.master
+
+root.bind_all("<MouseWheel>", scroll_settings)
+
+settings_content.columnconfigure(0, weight=1)
+ttk.Label(settings_content, text="Preferences", style="Section.TLabel").grid(
     row=0, column=0, sticky="w", pady=(0, 8)
 )
+ttk.Label(settings_content, text="Media:", style="Muted.TLabel").grid(
+    row=1, column=0, sticky="w", pady=(8, 4)
+)
 playlist_check = ttk.Checkbutton(
-    settings_card,
+    settings_content,
     text="Download playlist",
     variable=playlist_var,
     style="Card.TCheckbutton",
 )
-playlist_check.grid(row=1, column=0, sticky="w")
+playlist_check.grid(row=2, column=0, sticky="w")
 audio_check = ttk.Checkbutton(
-    settings_card,
+    settings_content,
     text="Audio only",
     variable=audio_var,
     style="Card.TCheckbutton",
 )
-audio_check.grid(row=2, column=0, sticky="w")
+audio_check.grid(row=3, column=0, sticky="w")
+
+ttk.Label(settings_content, text="Debugging:", style="Muted.TLabel").grid(
+    row=4, column=0, sticky="w", pady=(12, 4)
+)
+verbose_check = ttk.Checkbutton(
+    settings_content,
+    text="Verbose output",
+    variable=verbose_var,
+    style="Card.TCheckbutton",
+)
+verbose_check.grid(row=5, column=0, sticky="w")
+no_warnings_check = ttk.Checkbutton(
+    settings_content,
+    text="No warnings",
+    variable=no_warnings_var,
+    style="Card.TCheckbutton",
+)
+no_warnings_check.grid(row=6, column=0, sticky="w")
+quiet_check = ttk.Checkbutton(
+    settings_content,
+    text="Quiet mode",
+    variable=quiet_var,
+    style="Card.TCheckbutton",
+)
+quiet_check.grid(row=7, column=0, sticky="w")
+
+ttk.Label(settings_content, text="Download path:", style="Muted.TLabel").grid(
+    row=8, column=0, sticky="w", pady=(12, 4)
+)
+ttk.Label(
+    settings_content,
+    textvariable=path_var,
+    style="Muted.TLabel",
+    wraplength=250,
+).grid(row=9, column=0, sticky="w")
 pathPicker = ttk.Button(
-    settings_card,
+    settings_content,
     text="Choose download folder",
     command=select_download_path,
     style="Modern.TButton",
 )
-pathPicker.grid(row=3, column=0, sticky="ew", pady=(10, 5))
-ttk.Label(
-    settings_card,
-    textvariable=path_var,
-    style="Muted.TLabel",
-    wraplength=250,
-).grid(row=4, column=0, sticky="w", pady=(0, 10))
+pathPicker.grid(row=10, column=0, sticky="ew", pady=(8, 5))
 downloadBtn = ttk.Button(
-    settings_card,
+    settings_content,
     text="Start download",
     command=download_button_clicked,
     style="Download.TButton",
 )
-downloadBtn.grid(row=5, column=0, sticky="ew")
+downloadBtn.grid(row=11, column=0, sticky="ew")
 
 log_card = ttk.Frame(content, style="Card.TFrame", padding=16)
 log_card.grid(row=0, column=1, sticky="nsew")
