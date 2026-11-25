@@ -505,5 +505,12 @@ clearLogBtn = ttk.Button(
 )
 clearLogBtn.grid(row=3, column=0, sticky="e", pady=(10, 0))
 
+# Prompt to sure to quit on close
+def on_closing():
+    if messagebox.askokcancel("Quit", "Are you sure you want to quit?", parent=root):
+        root.destroy()
+        
+root.protocol("WM_DELETE_WINDOW", on_closing)
+
 root.mainloop()
 
