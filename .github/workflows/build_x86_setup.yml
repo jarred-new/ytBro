@@ -90,7 +90,7 @@ jobs:
       - name: Compile .ISS to .EXE Installer
         uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
         with:
-          path: setup/setup_x86.iss
+          path: setup_x86.iss
           options: /O+    
 
       - name: Upload Windows x86 build
