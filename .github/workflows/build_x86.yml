@@ -86,7 +86,7 @@ jobs:
 
           Expand-Archive -LiteralPath $zipPath -DestinationPath $distPath -Force
           Remove-Item -LiteralPath $zipPath -Force
-
+          
       - name: Upload Windows x86 build
         uses: actions/upload-artifact@v4
         with:
