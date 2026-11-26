@@ -94,10 +94,10 @@ jobs:
           options: /O+    
 
       - name: Upload Windows x86 build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: ytBro-Windows-x86
+          name: ytBro-Windows-x86-setup
           path: |
-            build/*.dist/**
-            build/*.exe
+            build\ytBro_setup_x86.exe
           include-hidden-files: true
+          archive: False
